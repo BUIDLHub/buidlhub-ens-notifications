@@ -1,8 +1,8 @@
 {
   "name": "buidlhub-ens-notifications",
   "version": "1.0.0",
-  "main": "dist/react-buidlhub.js",
-  "module": "dist/react-buidlhub.esm.js",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
   "license": "MIT",
   "scripts": {
     "build": "babel src --out-dir dist",
