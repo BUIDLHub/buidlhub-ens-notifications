@@ -195,7 +195,7 @@ export default class EmailComponent extends React.Component {
 
         
         let body = null;
-        let footer = (<i>Service provided by <a href='https://buidlhub.com'>BUIDLHub</a>.</i>);
+        let footer = (<i>Service provided by <a href="https://buidlhub.com"  target="_blank" rel="noopener">BUIDLHub</a>.</i>);
         if (this.state.error) {
             body = this._renderError();
         } else if (this.state.loading) {
@@ -242,7 +242,7 @@ export default class EmailComponent extends React.Component {
     }
 
     _renderExistingSubscription() {
-        return (<a href='https://buidlhub.com'>Manage Subscription</a>)
+        return (<a href='https://buidlhub.com' target="_blank" rel="noopener">Manage Subscription</a>)
     }
 
     _renderForm() {
