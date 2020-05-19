@@ -53,10 +53,10 @@ export default class BuidlhubEnsClient {
         };
 
         const response = await this._fetchWithRetry(url, options);
-        const data = response.json();
+       const data = response.json();
 
         if (data.error) {
-            throw new Error(error);
+            throw new Error(data.error);
         }
 
         return data;
