@@ -1,5 +1,5 @@
 import React from "react";
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
@@ -7,18 +7,17 @@ import styled from '@emotion/styled'
 
 import LoadingComponent from '../LoadingComponent/LoadingComponent';
 
-
 export default class EmailComponent extends React.Component {
 
-    static propTypes = {
-        name: PropTypes.string,
-        style: PropTypes.object,
-        placeholder: PropTypes.string,
-        value: PropTypes.string,
-        css: PropTypes.object,
-        publicAddress: PropTypes.string,
-        buidlhub: PropTypes.object.isRequired
-    };
+    // static propTypes = {
+    //     name: PropTypes.string,
+    //     style: PropTypes.object,
+    //     placeholder: PropTypes.string,
+    //     value: PropTypes.string,
+    //     css: PropTypes.object,
+    //     publicAddress: PropTypes.string,
+    //     buidlhub: PropTypes.object.isRequired
+    // };
 
 
     constructor(props) {
@@ -142,7 +141,7 @@ export default class EmailComponent extends React.Component {
         });
 
         const buidlhub = await this.getClient();
-        const { publicAddress, language } = this.props;
+        const { publicAddress } = this.props;
 
         try {
             const subscription = await buidlhub.getSubscription({ publicAddress });
@@ -161,7 +160,7 @@ export default class EmailComponent extends React.Component {
         this.emailInputElem
         const isValid = (typeof this.emailInputElem.checkValidity === 'function') ?
             this.emailInputElem.checkValidity() :
-            /\S+@\S+\.\S+/.test(emailInputElem.value);
+            /\S+@\S+\.\S+/.test(this.emailInputElem.value);
 
         if (!isValid) {
             this.setState({
@@ -190,15 +189,8 @@ export default class EmailComponent extends React.Component {
 
     render() {
         const {
-            ActionsContainer,
             CancelButton,
-            EmailInput,
-            Form,
-            InputContainer,
-            Label,
-            LabelContainer,
             MessageContainer,
-            SubmitButton,    
         } = this.components;
 
         
@@ -264,10 +256,8 @@ export default class EmailComponent extends React.Component {
             CancelButton,
             EmailInput,
             Form,
-            InputContainer,
             Label,
             LabelContainer,
-            MessageContainer,
             SubmitButton,    
         } = this.components;
 
