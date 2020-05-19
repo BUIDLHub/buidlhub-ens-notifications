@@ -1,8 +1,9 @@
 import BuidlhubEnsClient from './BuidlhubEnsClient';
 
-class MockEnsEndpoint extends BuidlhubEnsClient {
+export default class BuidlhubEnsClientMock extends BuidlhubEnsClient {
 
-    constructor(props) {
+    constructor(props = {}) {
+        super(props);
         this.delay = props.delay || 2000;
     }
 
@@ -47,10 +48,8 @@ class MockEnsEndpoint extends BuidlhubEnsClient {
 
 
     async _post(resourcePath, body) {
-        const response = await mockEndpoint.request(resourcePath, body);
+        const response = await this.request(resourcePath, body);
         return response.data;
     }
 
-};
-
-
+}
