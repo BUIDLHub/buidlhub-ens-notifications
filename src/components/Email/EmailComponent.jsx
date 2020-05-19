@@ -7,6 +7,8 @@ import styled from '@emotion/styled'
 
 import LoadingComponent from '../LoadingComponent/LoadingComponent';
 
+import BuidlhubEnsClient from '../../BuidlhubEnsClient';
+
 export default class EmailComponent extends React.Component {
 
     // static propTypes = {
@@ -23,9 +25,7 @@ export default class EmailComponent extends React.Component {
     constructor(props) {
         super(props);
 
-        if (!props.buidlhub) {
-            throw new Error("buidlhub is required");
-        }
+        this.buidlhub = new BuidlhubEnsClient();
 
         const emailAddress = props.emailAddress || '';
 
@@ -85,7 +85,7 @@ export default class EmailComponent extends React.Component {
     }
 
     async getClient() {
-        return Promise.resolve(this.props.buidlhub);
+        return Promise.resolve(this.buidlhub);
     }
 
     async handleCancel(event) {
@@ -103,7 +103,7 @@ export default class EmailComponent extends React.Component {
 
         this.setState({
             loading: true,
-            errorMessage: null,
+            error: null,
             statusMessage: 'Registering subscription'
         });
 
@@ -136,7 +136,7 @@ export default class EmailComponent extends React.Component {
     async fetchExistingSubscription() {
         this.setState({
             loading: true,
-            errorMessage: null,
+            error: null,
             statusMessage: 'Requesting subscription status'
         });
 
@@ -165,7 +165,7 @@ export default class EmailComponent extends React.Component {
         if (!isValid) {
             this.setState({
                 loading: false,
-                errorMessage: "Invalid email address"
+                statusMessage: "Invalid email address"
             });
         }
         return isValid;
@@ -174,7 +174,7 @@ export default class EmailComponent extends React.Component {
     handleError(error) {
         this.setState({
             loading: false,
-            errorMessage: error.message,
+            error: error.message,
             statusMessage: null
         });
     }
@@ -193,11 +193,13 @@ export default class EmailComponent extends React.Component {
             MessageContainer,
         } = this.components;
 
-        
+
         let body = null;
-        let footer = (<i>Service provided by <a href="https://buidlhub.com"  target="_blank" rel="noopener">BUIDLHub</a>.</i>);
+        let footer = (<i>Service provided by <a href="https://buidlhub.com" target="_blank" rel="noopener">BUIDLHub</a>.</i>);
+        
         if (this.state.error) {
             body = this._renderError();
+            footer = (<CancelButton type='button' onClick={this.handleCancel} value="Close" />);
         } else if (this.state.loading) {
             body = this._renderLoading();
         } else if (this.state.subscription.isRegistered) {
@@ -217,9 +219,6 @@ export default class EmailComponent extends React.Component {
                 <MessageContainer>
                     {this.state.statusMessage && (
                         <span className='status'>{this.state.statusMessage}</span>
-                    )}
-                    {this.state.errorMessage && (
-                        <span className='error'>{this.state.errorMessage}</span>
                     )}
                 </MessageContainer>
 
@@ -258,7 +257,7 @@ export default class EmailComponent extends React.Component {
             Form,
             Label,
             LabelContainer,
-            SubmitButton,    
+            SubmitButton,
         } = this.components;
 
 
