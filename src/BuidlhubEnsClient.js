@@ -1,4 +1,3 @@
-
 const DEFAULT_ENDPOINT = 'https://ens.buidlhub.com';
 
 export default class BuidlhubEnsClient {
@@ -8,18 +7,36 @@ export default class BuidlhubEnsClient {
         this.endpoint = endpoint;
     }
 
-    async addSubscription(publicAddress, emailAddress) {
-        return this.getSubscription(publicAddress);
-        // return this._post('/addRegistration', {
-        //     walletAddress: publicAddress,
-        //     emailAddress: emailAddress
-        // });
+    async addSubscription(props = {}) {
+        this._validatePropsExist(props, ['emailAddress', 'publicAddress'])
+
+        const { publicAddress, emailAddress, language } = props;
+
+        return this._post('/register', {
+            walletAddress: publicAddress,
+            email: emailAddress,
+            language
+        });
     }
 
-    async getSubscription(publicAddress) {
+    async getSubscription(props = {}) {
+        this._validatePropsExist(props, ['publicAddress'])
+
+        const { publicAddress, language } = props;
+
         return this._post('/lookupRegistration', {
-            walletAddress: publicAddress
+            walletAddress: publicAddress,
+            language
         });
+    }
+
+    _validatePropsExist(props, requiredProps) {
+        for (const propertyName of requiredProps) {
+            const propertyValue = props[propertyName];
+            if (!propertyValue) {
+                throw new Error(`${propertyName} is required`);
+            }
+        }
     }
 
     async _post(resourcePath, body) {
@@ -29,13 +46,20 @@ export default class BuidlhubEnsClient {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json;charset=UTF-8'
+                'Content-Type': 'application/json;charset=UTF-8',
+                'x-referrer': window?.location?.hostname,
             },
             body: JSON.stringify(body)
         };
 
         const response = await this._fetchWithRetry(url, options);
-        return response.json();
+        const data = response.json();
+
+        if (data.error) {
+            throw new Error(error);
+        }
+
+        return data;
     }
 
     async _fetchWithRetry(url, options, maxAttempts = 3) {
@@ -45,7 +69,6 @@ export default class BuidlhubEnsClient {
                 return await fetch(url, options);
             } catch (error) {
                 lastError = error;
-                // TODO: log error
             }
 
             // sleep before retry
