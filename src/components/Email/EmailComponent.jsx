@@ -1,26 +1,38 @@
-import React from "react";
-// import PropTypes from 'prop-types';
-
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
+import React from "react";
 import styled from '@emotion/styled'
 
+import BuidlhubEnsClient from '../../BuidlhubEnsClient';
 import LoadingComponent from '../LoadingComponent/LoadingComponent';
 
-import BuidlhubEnsClient from '../../BuidlhubEnsClient';
+
+const DEFAULT_TRANSLATION = {
+    cancel: 'Cancel',
+    close: 'Close',
+    error: 'Error',
+    loading: 'Registering subscription',
+    placeholder: 'Enter Email address',
+    registerSuccess: "Please check confirmation email to complete subscription.",
+    registerFailure: "Sorry, unable to setup subscription.",
+    invalidEmailAddress: "Invalid email address",
+    submit: 'Submit',
+};
+
+
+const DEFAULT_STYLES = {
+    actionsContainer: `
+        display: flex;
+        justify-content: flex-end;
+    `,
+    emailInput: `
+        width: 100%; 
+        margin: 1em 0;
+    `
+};
+
 
 export default class EmailComponent extends React.Component {
-
-    // static propTypes = {
-    //     name: PropTypes.string,
-    //     style: PropTypes.object,
-    //     placeholder: PropTypes.string,
-    //     value: PropTypes.string,
-    //     css: PropTypes.object,
-    //     publicAddress: PropTypes.string,
-    //     buidlhub: PropTypes.object.isRequired
-    // };
-
 
     constructor(props) {
         super(props);
@@ -29,18 +41,35 @@ export default class EmailComponent extends React.Component {
 
         const emailAddress = props.emailAddress || '';
 
+        const translation = props.translation || {};
+
+        this.translation = {
+            ...DEFAULT_TRANSLATION,
+            ...translation
+        };
+
         this.state = {
             loading: false,
             statusMessage: null,
-            submitting: false,
+            hasSubmitted: false,
             subscription: {},
-            emailAddress
+            emailAddress,
+
+            // // FIXME: show loading state
+            // hasSubmitted: true,
+            // loading: true,
+            // error: null,
+            // statusMessage: 'Registering subscription'
+
+            // FIXME: show completed state
+            // hasSubmitted: true,
+            // statusMessage: "Please check your inbox to verify your email address. You will be redirected to BUIDLHub to manage your email notifications."
+            // "Sorry, unable to setup subscription.";
         };
 
         this.components = this.buildStyledComponents(props);
 
         // bind 'this'
-        this.fetchExistingSubscription = this.fetchExistingSubscription.bind(this);
         this.getClient = this.getClient.bind(this);
         this.handleCancel = this.handleCancel.bind(this);
         this.handleEmailInputChange = this.handleEmailInputChange.bind(this);
@@ -48,40 +77,40 @@ export default class EmailComponent extends React.Component {
         this.validateForm = this.validateForm.bind(this);
     }
 
+    buildStyledComponent(props, prefix, defaultType) {
+        const passedComponent = props[`${prefix}Component`];
+        let component = passedComponent || defaultType;
+        
+        const componentStyle = props[`${prefix}Style`] || DEFAULT_STYLES[prefix];
+        if (componentStyle) {
+            component = styled(component)(componentStyle)
+        }
+
+        return component;
+    }
+
     // https://stackoverflow.com/questions/22573494/react-js-input-losing-focus-when-rerendering
     buildStyledComponents(props) {
-        const cancelStyle = props.cancelStyle || '';
-        const containerStyle = props.style || '';
-        const emailInputStyle = props.emailInputStyle || '';
-        const labelStyle = props.labelStyle || 'margin-right: 8px;';
-        const submitStyle = props.submitStyle || '';
+        const ActionsContainer = this.buildStyledComponent(props, 'actionsContainer', 'div');
+        const Cancel = this.buildStyledComponent(props, 'cancel', 'button');
+        const EmailInput = this.buildStyledComponent(props, 'emailInput', 'input');
+        const Form = this.buildStyledComponent(props, 'form', 'form');
+        const Label = this.buildStyledComponent(props, 'label', 'label');
+        const MessageContainer = this.buildStyledComponent(props, 'messageContainer', 'div');
+        const Submit = this.buildStyledComponent(props, 'submit', 'submit');
 
-        const CancelButton = this.props.cancelComponent || styled('input')(cancelStyle);
-        const EmailInput = this.props.emailInputComponent || styled('input')(emailInputStyle);
-        const Form = this.props.formComponent || styled('form')(containerStyle)
-        const Label = this.props.labelComponent || styled('label')(labelStyle);
-        const SubmitButton = this.props.submitComponent || styled('input')(submitStyle);
-
-        const LabelContainer = this.props.labelContainer || styled('div')('');
-        const InputContainer = this.props.inputContainer || styled('div')('');
-        const ActionsContainer = this.props.actionsContainer || styled('div')('');
-        const MessageContainer = this.props.messageContainer || styled('div')('');
+        const Loading = this.props.loadingComponent || LoadingComponent;
 
         return {
             ActionsContainer,
-            CancelButton,
+            Cancel,
             EmailInput,
             Form,
-            InputContainer,
             Label,
-            LabelContainer,
+            Loading,
             MessageContainer,
-            SubmitButton,
+            Submit,
         };
-    }
-
-    componentDidMount() {
-        this.fetchExistingSubscription();
     }
 
     async getClient() {
@@ -103,8 +132,9 @@ export default class EmailComponent extends React.Component {
 
         this.setState({
             loading: true,
+            hasSubmitted: true,
             error: null,
-            statusMessage: 'Registering subscription'
+            statusMessage: this.translation.loading
         });
 
         const buidlhub = await this.getClient();
@@ -116,14 +146,11 @@ export default class EmailComponent extends React.Component {
 
             const isRegistered = response.status;
             const statusMessage = isRegistered ?
-                "Please check confirmation email to complete subscription." :
-                "Sorry, unable to setup subscription.";
+                this.translation.registerSuccess :
+                this.translation.registerFailure;
 
             this.setState({
                 loading: false,
-                subscription: {
-                    isPending: true
-                },
                 statusMessage
             });
 
@@ -133,39 +160,19 @@ export default class EmailComponent extends React.Component {
         }
     }
 
-    async fetchExistingSubscription() {
-        this.setState({
-            loading: true,
-            error: null,
-            statusMessage: 'Requesting subscription status'
-        });
-
-        const buidlhub = await this.getClient();
-        const { publicAddress } = this.props;
-
-        try {
-            const subscription = await buidlhub.getSubscription({ publicAddress });
-            this.setState({
-                loading: false,
-                subscription,
-                statusMessage: null
-            });
-        } catch (error) {
-            this.handleError(error);
-        }
-    }
-
     validateForm() {
         // validate email address
         this.emailInputElem
+
         const isValid = (typeof this.emailInputElem.checkValidity === 'function') ?
             this.emailInputElem.checkValidity() :
             /\S+@\S+\.\S+/.test(this.emailInputElem.value);
 
         if (!isValid) {
             this.setState({
+                hasSubmitted: true,
                 loading: false,
-                statusMessage: "Invalid email address"
+                statusMessage: this.translation.invalidEmailAddress
             });
         }
         return isValid;
@@ -174,8 +181,7 @@ export default class EmailComponent extends React.Component {
     handleError(error) {
         this.setState({
             loading: false,
-            error: error.message,
-            statusMessage: null
+            statusMessage: this.translation.error + ": " + error.message
         });
     }
 
@@ -185,91 +191,71 @@ export default class EmailComponent extends React.Component {
         });
     }
 
-
-
     render() {
         const {
-            CancelButton,
+            Cancel,
+            Form,
+            Loading,
             MessageContainer,
+            ActionsContainer,
+            Submit,
         } = this.components;
 
 
         let body = null;
-        let footer = (<i>Service provided by <a href="https://buidlhub.com" target="_blank" rel="noopener">BUIDLHub</a>.</i>);
+        let formActions = (<Cancel type='button' onClick={this.handleCancel}>{this.translation.close}</Cancel>);
         
-        if (this.state.error) {
-            body = this._renderError();
-            footer = (<CancelButton type='button' onClick={this.handleCancel} value="Close" />);
-        } else if (this.state.loading) {
-            body = this._renderLoading();
-        } else if (this.state.subscription.isRegistered) {
-            body = this._renderExistingSubscription();
-            footer = (<CancelButton type='button' onClick={this.handleCancel} value="Close" />);
-        } else if (this.state.subscription.isPending) {
-            body = '';
-            footer = (<CancelButton type='button' onClick={this.handleCancel} value="Close" />);
-        } else {
-            body = this._renderForm();
+        if (! this.state.hasSubmitted) {
+            body = this._renderFormBody();
+            formActions = (
+                <>
+                    <Cancel type='button' onClick={this.handleCancel}>{this.translation.cancel}</Cancel>
+                    <Submit type='submit'>{this.translation.submit}</Submit>
+                </>
+            );
         }
-
-        return (
-            <div>
-                {body}
-
-                <MessageContainer>
-                    {this.state.statusMessage && (
-                        <span className='status'>{this.state.statusMessage}</span>
-                    )}
-                </MessageContainer>
-
-                {footer}
-
-            </div>
-        );
-    }
-
-    _renderError() {
-        return ("Error: " + this.state.error)
-    }
-
-    _renderLoading() {
-        let loadingComponent = this.props.loading;
-        if (!loadingComponent) {
-            loadingComponent = (<LoadingComponent message={this.state.statusMessage} />);
-        }
-        return loadingComponent;
-    }
-
-    _renderExistingSubscription() {
-        return (<a href='https://buidlhub.com' target="_blank" rel="noopener">Manage Subscription</a>)
-    }
-
-    _renderForm() {
-        let { name, placeholder } = this.props;
-        const className = '';
-        const label = 'Email Address';
-        placeholder = 'example@buidlhub.com';
-
-        const {
-            ActionsContainer,
-            CancelButton,
-            EmailInput,
-            Form,
-            Label,
-            LabelContainer,
-            SubmitButton,
-        } = this.components;
-
 
         return (
             <Form onSubmit={this.handleFormSubmit}>
-                <LabelContainer>
-                    <Label htmlFor={name}>{label}</Label>
-                </LabelContainer>
+                
+                {body}
+
+                {this.state.statusMessage && (
+                    <MessageContainer>
+                    {this.state.loading && (
+                        <Loading />
+                    )}
+                    <span className='status'>{this.state.statusMessage}</span>
+                </MessageContainer>
+                )}
+            
+                <ActionsContainer>
+                    {formActions}
+                </ActionsContainer>
+
+            </Form>
+        );
+    }
+
+    _renderFormBody() {
+        const address = this.props.publicAddress;
+        const className = this.props.className || 'buildhub-input-email';
+        const label = this.props.label || 'Email Address';
+        const name = this.props.name || 'buidlhub-input-email';
+
+        const {
+            EmailInput,
+            Label,
+        } = this.components;
+
+        return (
+            <>
+                <Label address={address} name={name}>{label}</Label>
 
                 <EmailInput
+                    id={name}
                     name={name}
-                    placeholder={placeholder}
+                    placeholder={this.translation.placeholder}
                     type="email"
                     required={true}
                     value={this.state.emailAddress}
@@ -277,14 +263,8 @@ export default class EmailComponent extends React.Component {
                     onChange={this.handleEmailInputChange}
                     ref={elem => this.emailInputElem = elem}
                 />
-
-                <ActionsContainer>
-                    <CancelButton type='button' onClick={this.handleCancel} value="Cancel" />
-                    <SubmitButton type='submit' />
-                </ActionsContainer>
-
-            </Form>
-        )
+            </>
+        );
     }
 
 }
