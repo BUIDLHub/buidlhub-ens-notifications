@@ -1,13 +1,17 @@
 {
   "name": "@buidlhub/buidlhub-ens-notifications",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "license": "MIT",
+  "nodemonConfig": {
+    "ignore": ["dist/*"]
+  },
   "scripts": {
     "build": "babel src --out-dir dist",
     "build-storybook": "build-storybook",
-    "storybook": "start-storybook -p 6006"
+    "storybook": "start-storybook -p 6006",
+    "watch": "nodemon --exec 'yarn run build'"
   },
   "peerDependencies": {
     "@emotion/core": "^10.0.9",
