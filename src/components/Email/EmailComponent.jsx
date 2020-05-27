@@ -28,6 +28,7 @@ const DEFAULT_STYLES = {
     emailInput: `
         width: 100%; 
         margin: 1em 0;
+        padding: 1px 2px 1px 10px;
     `
 };
 
@@ -59,11 +60,11 @@ export default class EmailComponent extends React.Component {
             // hasSubmitted: true,
             // loading: true,
             // error: null,
-            // statusMessage: 'Registering subscription'
+            // statusMessage: this.translation.loading
 
             // FIXME: show completed state
             // hasSubmitted: true,
-            // statusMessage: "Please check your inbox to verify your email address. You will be redirected to BUIDLHub to manage your email notifications."
+            // statusMessage: this.translation.registerSuccess 
             // "Sorry, unable to setup subscription.";
         };
 
@@ -81,8 +82,12 @@ export default class EmailComponent extends React.Component {
         const passedComponent = props[`${prefix}Component`];
         let component = passedComponent || defaultType;
         
-        const componentStyle = props[`${prefix}Style`] || DEFAULT_STYLES[prefix];
+        const componentStyle = passedComponent ?
+            null : 
+            props[`${prefix}Style`] || DEFAULT_STYLES[prefix];
+            
         if (componentStyle) {
+            console.log(`styling ${prefix}...`)
             component = styled(component)(componentStyle)
         }
 
@@ -203,7 +208,7 @@ export default class EmailComponent extends React.Component {
 
 
         let body = null;
-        let formActions = (<Cancel type='button' onClick={this.handleCancel}>{this.translation.close}</Cancel>);
+        let formActions = null;//(<Cancel type='button' onClick={this.handleCancel}>{this.translation.close}</Cancel>);
         
         if (! this.state.hasSubmitted) {
             body = this._renderFormBody();
@@ -219,14 +224,14 @@ export default class EmailComponent extends React.Component {
             <Form onSubmit={this.handleFormSubmit}>
                 
                 {body}
-
+                
                 {this.state.statusMessage && (
                     <MessageContainer>
                     {this.state.loading && (
                         <Loading />
                     )}
                     <span className='status'>{this.state.statusMessage}</span>
-                </MessageContainer>
+                    </MessageContainer>
                 )}
             
                 <ActionsContainer>
