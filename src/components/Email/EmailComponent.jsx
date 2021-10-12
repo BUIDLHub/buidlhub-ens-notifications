@@ -208,7 +208,9 @@ export default class EmailComponent extends React.Component {
 
 
         let body = null;
-        let formActions = null;//(<Cancel type='button' onClick={this.handleCancel}>{this.translation.close}</Cancel>);
+        let formActions = this.state.statusMessage === this.translation.registerSuccess ? 
+            (<Submit type='button' onClick={this.handleCancel}>{this.translation.close}</Submit>) : 
+            null;
         
         if (! this.state.hasSubmitted) {
             body = this._renderFormBody();
