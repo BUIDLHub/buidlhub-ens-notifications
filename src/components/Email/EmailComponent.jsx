@@ -9,7 +9,7 @@ import LoadingComponent from '../LoadingComponent/LoadingComponent';
 
 const DEFAULT_TRANSLATION = {
     cancel: 'Cancel',
-    close: 'Close',
+    close: 'Ok',
     error: 'Error',
     loading: 'Registering subscription',
     placeholder: 'Enter Email address',
@@ -23,7 +23,7 @@ const DEFAULT_TRANSLATION = {
 const DEFAULT_STYLES = {
     actionsContainer: `
         display: flex;
-        justify-content: flex-end;
+        justify-content: flex-start;
     `,
     emailInput: `
         width: 100%; 
@@ -208,7 +208,9 @@ export default class EmailComponent extends React.Component {
 
 
         let body = null;
-        let formActions = null;//(<Cancel type='button' onClick={this.handleCancel}>{this.translation.close}</Cancel>);
+        let formActions = this.state.statusMessage === this.translation.registerSuccess ? 
+            (<Submit type='button' onClick={this.handleCancel}>{this.translation.close}</Submit>) : 
+            null;
         
         if (! this.state.hasSubmitted) {
             body = this._renderFormBody();
