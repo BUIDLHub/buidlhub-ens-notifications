@@ -9,7 +9,7 @@ import LoadingComponent from '../LoadingComponent/LoadingComponent';
 
 const DEFAULT_TRANSLATION = {
     cancel: 'Cancel',
-    close: 'Close',
+    close: 'Ok',
     error: 'Error',
     loading: 'Registering subscription',
     placeholder: 'Enter Email address',
