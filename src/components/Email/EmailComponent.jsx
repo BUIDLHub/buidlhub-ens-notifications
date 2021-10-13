@@ -23,7 +23,7 @@ const DEFAULT_TRANSLATION = {
 const DEFAULT_STYLES = {
     actionsContainer: `
         display: flex;
-        justify-content: flex-end;
+        justify-content: flex-start;
     `,
     emailInput: `
         width: 100%; 
